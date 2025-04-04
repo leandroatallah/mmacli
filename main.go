@@ -16,12 +16,12 @@ func init() {
 }
 
 func main() {
-	fmt.Println("Welcome to MMA CLI")
+	fmt.Printf("# Welcome to MMA CLI\n\n")
 
 	fighterOne := SetupPlayer(1)
 	fighterTwo := SetupPlayer(2)
 
-	WriteString(fmt.Sprintf("%s versus %s\n", fighterOne.name, fighterTwo.name))
+	WriteString(fmt.Sprintf("\n== %s versus %s ==\n", fighterOne.name, fighterTwo.name))
 
 	players := map[int]*Fighter{1: &fighterOne, 2: &fighterTwo}
 	var currentPlayerIndex int

@@ -31,7 +31,7 @@ func SetupPlayer(index int) Fighter {
 }
 
 func PlayersInitiative(players map[int]*Fighter) int {
-	fmt.Println("Players roll initiative")
+	fmt.Printf("\n# Players roll initiative\n\n")
 	time.Sleep(TurnDelay)
 	for {
 		playerOne := RollDice()
@@ -39,26 +39,26 @@ func PlayersInitiative(players map[int]*Fighter) int {
 
 		p1Name := GetPlayer(1, players).name
 		p2Name := GetPlayer(2, players).name
-		fmt.Printf("%s rolls: ", p1Name)
+		fmt.Printf("- %s rolls: ", p1Name)
 		time.Sleep(TurnDelay)
 		fmt.Println(playerOne)
 		time.Sleep(TurnDelay)
 
-		fmt.Printf("%s rolls: ", p2Name)
+		fmt.Printf("- %s rolls: ", p2Name)
 		time.Sleep(TurnDelay)
 		fmt.Println(playerTwo)
 		time.Sleep(TurnDelay)
 
 		if playerOne > playerTwo {
-			fmt.Printf("%s is next to play\n\n", p1Name)
+			fmt.Printf("- %s (player 1) is next to play\n\n", p1Name)
 			time.Sleep(TurnDelay)
 			return 1
 		} else if playerTwo > playerOne {
-			fmt.Printf("%s is next to play\n\n", p2Name)
+			fmt.Printf("- %s (player 2) is next to play\n\n", p2Name)
 			time.Sleep(TurnDelay)
 			return 2
 		}
-		fmt.Println("Draw...")
+		fmt.Println("- Draw...")
 		time.Sleep(TurnDelay)
 	}
 }
@@ -78,7 +78,7 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 
 	fmt.Printf("%s (player %d) turn\n", playerName, currentPlayerIndex)
 
-	fmt.Println("Choose your play:")
+	fmt.Println("Choose your attack play:")
 	fmt.Println("[1]: Jab")
 	choice, err := ReadChar()
 	if err != nil {
@@ -91,9 +91,10 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 	}
 	switch attack {
 	case attackList["1"]:
-		fmt.Printf("%s tries to hit a punch\n", playerName)
+		fmt.Printf("\n- %s tries to hit a punch\n", playerName)
 		time.Sleep(TurnDelay)
-		power := RollDice()
+		// power := RollDice()
+		power := 6
 		isCritical := power == 6
 		isFail := power == 1
 		criticalText := ""
@@ -102,22 +103,24 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 		} else if isFail {
 			criticalText = "[CRITICAL FAIL!]"
 		}
-		fmt.Printf("%s rolls: ", playerName)
+		fmt.Printf("- %s rolls: ", playerName)
 		time.Sleep(TurnDelay)
 		fmt.Printf("%d %s\n", power, criticalText)
 		time.Sleep(TurnDelay)
 
 		if isFail {
-			fmt.Printf("%s missed the attack\n", playerName)
+			fmt.Printf("- %s missed the attack\n\n", playerName)
 			return nil
 		}
 
 		if isCritical {
 			bonus := RollDice()
 			power += bonus
-			fmt.Printf("%s rolls a bonus: ", playerName)
+			fmt.Printf("- %s rolls a bonus: ", playerName)
 			time.Sleep(TurnDelay)
 			fmt.Printf("%d\n", bonus)
+			time.Sleep(TurnDelay)
+			fmt.Printf("- %s attack is: %d (%d + %d)\n\n", playerName, power, power-bonus, bonus)
 			time.Sleep(TurnDelay)
 		}
 
@@ -128,9 +131,9 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 
 		damage := max(power-defense, 0)
 		if damage > 0 {
-			fmt.Printf("%s suffered %d of damage\n", opponentName, damage)
+			fmt.Printf("- %s suffered %d of damage\n", opponentName, damage)
 		} else {
-			fmt.Printf("%s doesn't suffered any damage\n", opponentName)
+			fmt.Printf("- %s doesn't suffered any damage\n", opponentName)
 		}
 		time.Sleep(TurnDelay)
 		opponent := players[opponentIndex]
@@ -155,7 +158,7 @@ var defenseList = map[string]Defense{
 
 func PlayerDefense(defenderIndex int, players map[int]*Fighter) (int, error) {
 	playerName := GetPlayer(defenderIndex, players).name
-	fmt.Printf("%s choose your defense:\n", playerName)
+	fmt.Printf("\n%s choose your defense:\n", playerName)
 	fmt.Println("[1]: Block")
 	choice, err := ReadChar()
 	if err != nil {
@@ -171,12 +174,12 @@ func PlayerDefense(defenderIndex int, players map[int]*Fighter) (int, error) {
 
 	switch defense {
 	case defenseList["1"]:
-		fmt.Printf("%s tries to block\n", playerName)
+		fmt.Printf("\n- %s tries to block\n", playerName)
 		time.Sleep(TurnDelay)
 		block := RollDice()
-		fmt.Printf("%s rolls: ", playerName)
+		fmt.Printf("- %s rolls: ", playerName)
 		time.Sleep(TurnDelay)
-		fmt.Println(block)
+		fmt.Printf("%d\n\n", block)
 		return block, nil
 	default:
 		return 0, fmt.Errorf("Oops! Something wrong happened.")
