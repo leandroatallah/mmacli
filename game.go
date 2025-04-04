@@ -156,12 +156,13 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 type Defense struct {
 	name      string
 	precision string
+	threshold int // Minimum roll required for success
 }
 
 var defenseList = map[string]Defense{
-	"1": {"Block", "100%"},
-	"2": {"Evade", "66%"},
-	"3": {"Counter", "50%"},
+	"1": {"Block", "100%", 0},  // Block always works with roll value
+	"2": {"Evade", "66%", 3},   // Must roll > 2
+	"3": {"Counter", "50%", 4}, // Must roll > 3
 }
 
 func PlayerDefense(defenderIndex int, players map[int]*Fighter) (int, error) {
@@ -193,24 +194,13 @@ func PlayerDefense(defenderIndex int, players map[int]*Fighter) (int, error) {
 	switch defense {
 	case defenseList["1"]:
 		return roll, nil
-	case defenseList["2"]:
-		result := 0
-		if roll > 2 {
-			fmt.Printf("- %s succesfully %ss\n", playerName, defenseName)
-			result = math.MaxInt
-		} else {
-			fmt.Printf("- %s fails to %s\n", playerName, defenseName)
+	case defenseList["2"], defenseList["3"]:
+		if roll > defense.threshold {
+			fmt.Printf("- %s successfully %ss\n", playerName, defenseName)
+			return math.MaxInt, nil
 		}
-		return result, nil
-	case defenseList["3"]:
-		result := 0
-		if roll > 3 {
-			fmt.Printf("- %s succesfully %ss\n", playerName, defenseName)
-			result = math.MaxInt
-		} else {
-			fmt.Printf("- %s fails to %s\n", playerName, defenseName)
-		}
-		return result, nil
+		fmt.Printf("- %s fails to %s\n", playerName, defenseName)
+		return 0, nil
 	}
 
 	return 0, fmt.Errorf("Oops! Something wrong happened.")
