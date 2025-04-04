@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"math/rand"
 	"time"
@@ -15,7 +16,16 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+var Delay = 1 * time.Second
+
 func main() {
+	hideDelay := flag.Bool("quick", false, "Skip delays")
+	flag.Parse()
+
+	if *hideDelay {
+		Delay = 0
+	}
+
 	fmt.Printf("# Welcome to MMA CLI\n\n")
 
 	fighterOne := SetupPlayer(1)
@@ -28,14 +38,14 @@ func main() {
 	shouldRunInitiative := true
 
 	for CheckGameOver(players) == false {
-		time.Sleep(time.Second * 1)
+		time.Sleep(Delay)
 		if shouldRunInitiative {
 			currentPlayerIndex = PlayersInitiative(players)
 		}
 
 		opponentIndex := Swap[currentPlayerIndex]
 		PlayerAttack(currentPlayerIndex, players)
-		time.Sleep(time.Second * 1)
+		time.Sleep(Delay)
 		fmt.Println()
 
 		PrintStatus(&fighterOne, &fighterTwo)

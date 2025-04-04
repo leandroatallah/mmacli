@@ -35,4 +35,5 @@ func PrintStatus(playerOne, playerTwo *Fighter) {
 	for _, p := range players {
 		fmt.Printf("%s\t%d\n", p.name, p.health)
 	}
+	fmt.Println()
 }
