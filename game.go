@@ -19,6 +19,10 @@ func RollDice() int {
 	return rand.Intn(6) + 1
 }
 
+func GetPlayer(currentPlayerIndex int, players map[int]*Fighter) *Fighter {
+	return players[currentPlayerIndex]
+}
+
 func SetupPlayer(index int) Fighter {
 	fmt.Printf("Type the name of fighter %d: ", index)
 	name := ReadString()
@@ -33,19 +37,25 @@ func PlayersInitiative(players map[int]*Fighter) int {
 		playerOne := RollDice()
 		playerTwo := RollDice()
 
-		fmt.Print("Player one rolls: ")
+		p1Name := GetPlayer(1, players).name
+		p2Name := GetPlayer(2, players).name
+		fmt.Printf("%s rolls: ", p1Name)
 		time.Sleep(TurnDelay)
 		fmt.Println(playerOne)
 		time.Sleep(TurnDelay)
 
-		fmt.Print("Player two rolls: ")
+		fmt.Printf("%s rolls: ", p2Name)
 		time.Sleep(TurnDelay)
 		fmt.Println(playerTwo)
 		time.Sleep(TurnDelay)
 
 		if playerOne > playerTwo {
+			fmt.Printf("%s is next to play\n\n", p1Name)
+			time.Sleep(TurnDelay)
 			return 1
 		} else if playerTwo > playerOne {
+			fmt.Printf("%s is next to play\n\n", p2Name)
+			time.Sleep(TurnDelay)
 			return 2
 		}
 		fmt.Println("Draw...")
@@ -63,6 +73,10 @@ var attackList = map[string]Attack{
 
 func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 	opponentIndex := Swap[currentPlayerIndex]
+	playerName := GetPlayer(currentPlayerIndex, players).name
+	opponentName := GetPlayer(opponentIndex, players).name
+
+	fmt.Printf("%s (player %d) turn\n", playerName, currentPlayerIndex)
 
 	fmt.Println("Choose your play:")
 	fmt.Println("[1]: Jab")
@@ -77,13 +91,35 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 	}
 	switch attack {
 	case attackList["1"]:
-		fmt.Printf("Player %v tries to hit a punch\n", currentPlayerIndex)
+		fmt.Printf("%s tries to hit a punch\n", playerName)
 		time.Sleep(TurnDelay)
 		power := RollDice()
-		fmt.Printf("Player %v rolls: ", currentPlayerIndex)
+		isCritical := power == 6
+		isFail := power == 1
+		criticalText := ""
+		if isCritical {
+			criticalText = "[CRITICAL HIT!]"
+		} else if isFail {
+			criticalText = "[CRITICAL FAIL!]"
+		}
+		fmt.Printf("%s rolls: ", playerName)
 		time.Sleep(TurnDelay)
-		fmt.Println(power)
+		fmt.Printf("%d %s\n", power, criticalText)
 		time.Sleep(TurnDelay)
+
+		if isFail {
+			fmt.Printf("%s missed the attack\n", playerName)
+			return nil
+		}
+
+		if isCritical {
+			bonus := RollDice()
+			power += bonus
+			fmt.Printf("%s rolls a bonus: ", playerName)
+			time.Sleep(TurnDelay)
+			fmt.Printf("%d\n", bonus)
+			time.Sleep(TurnDelay)
+		}
 
 		defense, err := PlayerDefense(opponentIndex, players)
 		if err != nil {
@@ -92,9 +128,9 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 
 		damage := max(power-defense, 0)
 		if damage > 0 {
-			fmt.Printf("Player %v suffered %d of damage\n", opponentIndex, damage)
+			fmt.Printf("%s suffered %d of damage\n", opponentName, damage)
 		} else {
-			fmt.Printf("Player %v doesn't suffered any damage\n", opponentIndex)
+			fmt.Printf("%s doesn't suffered any damage\n", opponentName)
 		}
 		time.Sleep(TurnDelay)
 		opponent := players[opponentIndex]
@@ -118,7 +154,8 @@ var defenseList = map[string]Defense{
 }
 
 func PlayerDefense(defenderIndex int, players map[int]*Fighter) (int, error) {
-	fmt.Printf("Player %v choose your defense:\n", defenderIndex)
+	playerName := GetPlayer(defenderIndex, players).name
+	fmt.Printf("%s choose your defense:\n", playerName)
 	fmt.Println("[1]: Block")
 	choice, err := ReadChar()
 	if err != nil {
@@ -134,10 +171,10 @@ func PlayerDefense(defenderIndex int, players map[int]*Fighter) (int, error) {
 
 	switch defense {
 	case defenseList["1"]:
-		fmt.Printf("Player %d tries to block\n", defenderIndex)
+		fmt.Printf("%s tries to block\n", playerName)
 		time.Sleep(TurnDelay)
 		block := RollDice()
-		fmt.Printf("Player %d rolls: ", defenderIndex)
+		fmt.Printf("%s rolls: ", playerName)
 		time.Sleep(TurnDelay)
 		fmt.Println(block)
 		return block, nil

@@ -34,7 +34,6 @@ func main() {
 		}
 
 		opponentIndex := Swap[currentPlayerIndex]
-		fmt.Printf("Player %v turn\n", currentPlayerIndex)
 		PlayerAttack(currentPlayerIndex, players)
 		time.Sleep(time.Second * 1)
 		fmt.Println()
