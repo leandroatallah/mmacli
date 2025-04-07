@@ -30,10 +30,9 @@ func WriteString(text string) error {
 	return err
 }
 
-func PrintStatus(playerOne, playerTwo *Fighter) {
-	players := []*Fighter{playerOne, playerTwo}
+func PrintStatus(players map[int]*Fighter) {
 	for _, p := range players {
-		fmt.Printf("%s\t%d\n", p.name, p.health)
+		fmt.Printf("\n%s\t%d\n", p.name, p.health)
 	}
 	fmt.Println()
 }

@@ -25,13 +25,6 @@ func GetPlayer(currentPlayerIndex int, players map[int]*Fighter) *Fighter {
 	return players[currentPlayerIndex]
 }
 
-func SetupPlayer(index int) Fighter {
-	fmt.Printf("Type the name of fighter %d: ", index)
-	name := ReadString()
-	health := MaxHealth
-	return Fighter{name, health}
-}
-
 func PlayersInitiative(players map[int]*Fighter) int {
 	fmt.Printf("\n# Players roll initiative\n\n")
 	time.Sleep(Delay)
@@ -71,6 +64,7 @@ type Attack struct {
 	// accuracy
 }
 
+// TODO: Convert to a JSON file
 var attackList = map[string]Attack{
 	"1": {"Jab", 0},
 	"2": {"Cross", 1},
@@ -102,8 +96,8 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 	time.Sleep(Delay)
 
 	power := RollDice()
-	isCritical := power == 6
-	isFail := power == 1
+	isCritical := Flags["enableCriticalHit"] && power == 6
+	isFail := Flags["enableCriticalFail"] && power == 1
 	criticalText := ""
 	if isCritical {
 		criticalText = "[CRITICAL HIT!]"
@@ -132,7 +126,7 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 		time.Sleep(Delay)
 	}
 
-	defense, err := PlayerDefense(opponentIndex, players)
+	defense, err := PlayerDefense(opponentIndex, attack.bonus, players)
 	if err != nil {
 		return fmt.Errorf("Oops! Something wrong happened.")
 	}
@@ -155,21 +149,29 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 
 type Defense struct {
 	name      string
-	precision string
 	threshold int // Minimum roll required for success
 }
 
+// TODO: Convert to a JSON file
 var defenseList = map[string]Defense{
-	"1": {"Block", "100%", 0},  // Block always works with roll value
-	"2": {"Evade", "66%", 3},   // Must roll > 2
-	"3": {"Counter", "50%", 4}, // Must roll > 3
+	"1": {"Block", 6},   // 100%
+	"2": {"Evade", 4},   // 66%
+	"3": {"Counter", 3}, // 50%
 }
 
-func PlayerDefense(defenderIndex int, players map[int]*Fighter) (int, error) {
+func PlayerDefense(defenderIndex, bonus int, players map[int]*Fighter) (int, error) {
 	playerName := GetPlayer(defenderIndex, players).name
 	fmt.Printf("\n%s choose your defense:\n", playerName)
 	for index, defense := range defenseList {
-		fmt.Printf("[%s]: %s \t(%s)\n", index, defense.name, defense.precision)
+		// TODO: Improve varible names
+		threshold := defense.threshold
+		if defense.threshold != 6 {
+			threshold = min(5, threshold+bonus)
+		}
+		successChance := float64(MaxDiceNumber - threshold)
+		precision := 1 - (successChance / float64(MaxDiceNumber))
+		precisionFormated := min(100, int((precision)*100))
+		fmt.Printf("[%s]: %s \t(%d%%)\n", index, defense.name, precisionFormated)
 	}
 	choice, err := ReadChar()
 	if err != nil {
@@ -195,7 +197,7 @@ func PlayerDefense(defenderIndex int, players map[int]*Fighter) (int, error) {
 	case defenseList["1"]:
 		return roll, nil
 	case defenseList["2"], defenseList["3"]:
-		if roll > defense.threshold {
+		if defense.threshold+bonus > MaxDiceNumber-roll {
 			fmt.Printf("- %s successfully %ss\n", playerName, defenseName)
 			return math.MaxInt, nil
 		}

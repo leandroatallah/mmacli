@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"math/rand"
+	"mmacli/config"
 	"time"
 )
 
@@ -12,28 +14,29 @@ type Fighter struct {
 	health int
 }
 
+var Delay = 1 * time.Second
+var HideDelayFlag = flag.Bool("quick", false, "Skip delays")
+var Flags config.FeatureFlags
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-var Delay = 1 * time.Second
-
 func main() {
-	hideDelay := flag.Bool("quick", false, "Skip delays")
-	flag.Parse()
+	// Load feature flags
+	loadedflags, err := config.LoadFeatureFlags("config/flags.json")
+	if err != nil {
+		log.Fatal("Error loading feature flags:", err)
+	}
+	Flags = loadedflags
 
-	if *hideDelay {
+	// Setup command-line flags
+	flag.Parse()
+	if *HideDelayFlag {
 		Delay = 0
 	}
 
-	fmt.Printf("# Welcome to MMA CLI\n\n")
-
-	fighterOne := SetupPlayer(1)
-	fighterTwo := SetupPlayer(2)
-
-	WriteString(fmt.Sprintf("\n== %s versus %s ==\n", fighterOne.name, fighterTwo.name))
-
-	players := map[int]*Fighter{1: &fighterOne, 2: &fighterTwo}
+	players := SetupGame()
 	var currentPlayerIndex int
 	shouldRunInitiative := true
 
@@ -46,12 +49,10 @@ func main() {
 		opponentIndex := Swap[currentPlayerIndex]
 		PlayerAttack(currentPlayerIndex, players)
 		time.Sleep(Delay)
-		fmt.Println()
 
-		PrintStatus(&fighterOne, &fighterTwo)
+		PrintStatus(players)
 
 		currentPlayerIndex = opponentIndex
-
 		shouldRunInitiative = !shouldRunInitiative
 	}
 
