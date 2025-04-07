@@ -7,17 +7,18 @@ import (
 
 type FeatureFlags map[string]bool
 
-func LoadFeatureFlags(filename string) (FeatureFlags, error) {
+var Flags FeatureFlags
+
+func LoadFeatureFlags(filename string) error {
 	file, err := os.ReadFile(filename)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	var flags FeatureFlags
-	err = json.Unmarshal(file, &flags)
+	err = json.Unmarshal(file, &Flags)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return flags, nil
+	return nil
 }

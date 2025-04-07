@@ -16,7 +16,6 @@ type Fighter struct {
 
 var Delay = 1 * time.Second
 var HideDelayFlag = flag.Bool("quick", false, "Skip delays")
-var Flags config.FeatureFlags
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
@@ -24,11 +23,10 @@ func init() {
 
 func main() {
 	// Load feature flags
-	loadedflags, err := config.LoadFeatureFlags("config/flags.json")
+	err := config.LoadFeatureFlags("config/flags.json")
 	if err != nil {
 		log.Fatal("Error loading feature flags:", err)
 	}
-	Flags = loadedflags
 
 	// Setup command-line flags
 	flag.Parse()
@@ -36,21 +34,25 @@ func main() {
 		Delay = 0
 	}
 
-	players := SetupGame()
+	err = SetupGame()
+	if err != nil {
+		log.Fatal("Error on setup game:", err)
+	}
+
 	var currentPlayerIndex int
 	shouldRunInitiative := true
 
-	for CheckGameOver(players) == false {
+	for CheckGameOver(Players) == false {
 		time.Sleep(Delay)
 		if shouldRunInitiative {
-			currentPlayerIndex = PlayersInitiative(players)
+			currentPlayerIndex = PlayersInitiative(Players)
 		}
 
 		opponentIndex := Swap[currentPlayerIndex]
-		PlayerAttack(currentPlayerIndex, players)
+		PlayerAttack(currentPlayerIndex, Players)
 		time.Sleep(Delay)
 
-		PrintStatus(players)
+		PrintStatus(Players)
 
 		currentPlayerIndex = opponentIndex
 		shouldRunInitiative = !shouldRunInitiative

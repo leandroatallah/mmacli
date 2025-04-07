@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"math/rand"
+	"mmacli/config"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -58,46 +61,58 @@ func PlayersInitiative(players map[int]*Fighter) int {
 	}
 }
 
-type Attack struct {
-	name  string
-	bonus int
-	// accuracy
-}
+func chooseAnAttack() (*config.Attack, error) {
+	fmt.Println("Choose your attack play:")
+	attackList := config.GetAllAttackList()
+	for index, attack := range attackList {
+		plusSign := ""
+		if attack.AttackBonus >= 0 {
+			plusSign = "+"
+		}
+		fmt.Printf("[%d]: %s \t(Power: %s%d)\n", index, attack.Name, plusSign, attack.AttackBonus)
+	}
+	choiceString, err := ReadChar()
+	if err != nil {
+		return nil, err
+	}
 
-// TODO: Convert to a JSON file
-var attackList = map[string]Attack{
-	"1": {"Jab", 0},
-	"2": {"Cross", 1},
-	"3": {"Uppercut", 2},
-	// "4": {"Hook"},
+	choice, err := strconv.Atoi(choiceString)
+	if err != nil {
+		return nil, err
+	}
+
+	attack, exists := config.GetAttackByIndex(choice)
+	if !exists {
+		// TODO: Handle this error
+		return nil, fmt.Errorf("Invalid attack choice")
+	}
+
+	return attack, nil
 }
 
 func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
+	err := config.LoadAttackList("config/attacks.json")
+	if err != nil {
+		log.Fatal("error on load attack list:", err)
+	}
+
 	opponentIndex := Swap[currentPlayerIndex]
 	playerName := GetPlayer(currentPlayerIndex, players).name
 	opponentName := GetPlayer(opponentIndex, players).name
 
 	fmt.Printf("%s (player %d) turn\n", playerName, currentPlayerIndex)
 
-	fmt.Println("Choose your attack play:")
-	for index, attack := range attackList {
-		fmt.Printf("[%s]: %s \t(Power: +%d)\n", index, attack.name, attack.bonus)
-	}
-	choice, err := ReadChar()
+	attack, err := chooseAnAttack()
 	if err != nil {
-		return err
+		log.Fatal("Error on choose attack:", err)
 	}
 
-	attack, exists := attackList[choice]
-	if !exists {
-		return fmt.Errorf("Invalid attack choice")
-	}
-	fmt.Printf("\n- %s tries to hit a %s\n", playerName, strings.ToLower(attack.name))
+	fmt.Printf("\n- %s tries to hit a %s\n", playerName, strings.ToLower(attack.Name))
 	time.Sleep(Delay)
 
 	power := RollDice()
-	isCritical := Flags["enableCriticalHit"] && power == 6
-	isFail := Flags["enableCriticalFail"] && power == 1
+	isCritical := config.Flags["enableCriticalHit"] && power == 6
+	isFail := config.Flags["enableCriticalFail"] && power == 1
 	criticalText := ""
 	if isCritical {
 		criticalText = "[CRITICAL HIT!]"
@@ -106,8 +121,8 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 	}
 	fmt.Printf("- %s rolls: ", playerName)
 	time.Sleep(Delay)
-	fmt.Printf("%d (+%d) %s\n", power, attack.bonus, criticalText)
-	power += attack.bonus
+	fmt.Printf("%d (+%d) %s\n", power, attack.AttackBonus, criticalText)
+	power += attack.AttackBonus
 	time.Sleep(Delay)
 
 	if isFail {
@@ -126,7 +141,7 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 		time.Sleep(Delay)
 	}
 
-	defense, err := PlayerDefense(opponentIndex, attack.bonus, players)
+	defense, err := PlayerDefense(opponentIndex, attack.AttackBonus, players)
 	if err != nil {
 		return fmt.Errorf("Oops! Something wrong happened.")
 	}

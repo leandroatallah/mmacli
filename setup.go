@@ -1,8 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+	"mmacli/config"
+)
 
 var sampleNames = map[int]string{1: "Anderson Silva", 2: "Chael Sonnen"}
+var Players map[int]*Fighter
 
 func CreateFighter(index int) Fighter {
 	fmt.Printf("Type the name of fighter %d: ", index)
@@ -16,20 +21,27 @@ func CreateFighter(index int) Fighter {
 	return Fighter{name, health}
 }
 
-func SetupPlayers() map[int]*Fighter {
+func SetupPlayers() {
 	fighterOne := CreateFighter(1)
 	fighterTwo := CreateFighter(2)
 
 	WriteString(fmt.Sprintf("\n== %s versus %s ==\n", fighterOne.name, fighterTwo.name))
 
-	players := map[int]*Fighter{1: &fighterOne, 2: &fighterTwo}
-	return players
+	Players = map[int]*Fighter{1: &fighterOne, 2: &fighterTwo}
 }
 
-func SetupGame() map[int]*Fighter {
+func SetupAttackList() {
+	err := config.LoadAttackList("config/attacks.json")
+	if err != nil {
+		log.Fatal("Error on loading attack list:", err)
+	}
+}
+
+func SetupGame() error {
 	fmt.Printf("# Welcome to MMA CLI\n\n")
 
-	players := SetupPlayers()
+	SetupPlayers()
+	SetupAttackList()
 
-	return players
+	return nil
 }
