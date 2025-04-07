@@ -43,14 +43,14 @@ func main() {
 	shouldRunInitiative := true
 
 	for CheckGameOver(Players) == false {
-		time.Sleep(Delay)
+		TimeDelay()
 		if shouldRunInitiative {
 			currentPlayerIndex = PlayersInitiative(Players)
 		}
 
 		opponentIndex := Swap[currentPlayerIndex]
 		PlayerAttack(currentPlayerIndex, Players)
-		time.Sleep(Delay)
+		TimeDelay()
 
 		PrintStatus(Players)
 
