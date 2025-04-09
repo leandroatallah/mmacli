@@ -6,6 +6,8 @@ import (
 	"log"
 	"math/rand"
 	"mmacli/config"
+	"mmacli/config/attack"
+	"mmacli/config/defense"
 	"time"
 )
 
@@ -22,10 +24,18 @@ func init() {
 }
 
 func main() {
-	// Load feature flags
+	// Load assets
 	err := config.LoadFeatureFlags("config/flags.json")
 	if err != nil {
 		log.Fatal("Error loading feature flags:", err)
+	}
+	err = attack.LoadList("config/attacks.json")
+	if err != nil {
+		log.Fatal("error on load attack list:", err)
+	}
+	err = defense.LoadList("config/defenses.json")
+	if err != nil {
+		log.Fatal("error on load defense list:", err)
 	}
 
 	// Setup command-line flags

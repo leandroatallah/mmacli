@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"mmacli/config"
+	"mmacli/config/attack"
 )
 
 var sampleNames = map[int]string{1: "Anderson Silva", 2: "Chael Sonnen"}
@@ -31,7 +31,7 @@ func SetupPlayers() {
 }
 
 func SetupAttackList() {
-	err := config.LoadAttackList("config/attacks.json")
+	err := attack.LoadList("config/list.json")
 	if err != nil {
 		log.Fatal("Error on loading attack list:", err)
 	}

@@ -7,6 +7,7 @@ import (
 
 type FeatureFlags map[string]bool
 
+// TODO: Change to a local variable and use a getter
 var Flags FeatureFlags
 
 func LoadFeatureFlags(filename string) error {

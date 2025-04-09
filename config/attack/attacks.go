@@ -1,4 +1,4 @@
-package config
+package attack
 
 import (
 	"encoding/json"
@@ -14,7 +14,7 @@ type Attack struct {
 
 var attackList []Attack
 
-func LoadAttackList(filename string) error {
+func LoadList(filename string) error {
 	file, err := os.ReadFile(filename)
 	if err != nil {
 		return err
@@ -32,7 +32,7 @@ func LoadAttackList(filename string) error {
 	return nil
 }
 
-func FindAttackByIndex(index int) int {
+func FindByIndex(index int) int {
 	for i, attack := range attackList {
 		if attack.Index == index {
 			return i
@@ -42,8 +42,8 @@ func FindAttackByIndex(index int) int {
 	return -1
 }
 
-func GetAttackByIndex(index int) (*Attack, bool) {
-	attackIndex := FindAttackByIndex(index)
+func GetByIndex(index int) (*Attack, bool) {
+	attackIndex := FindByIndex(index)
 	if attackIndex == -1 {
 		return nil, false
 	}
@@ -52,6 +52,6 @@ func GetAttackByIndex(index int) (*Attack, bool) {
 	return &attack, true
 }
 
-func GetAllAttackList() []Attack {
+func GetAll() []Attack {
 	return attackList
 }

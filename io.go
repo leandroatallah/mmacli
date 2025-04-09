@@ -32,15 +32,15 @@ func WriteString(text string) error {
 
 func PrintStatus(players map[int]*Fighter) {
 	for _, p := range players {
-		fmt.Printf("\n%s\t%d\n", p.name, p.health)
+		fmt.Printf("\n%s\t%d", p.name, p.health)
 	}
-	fmt.Println()
+	fmt.Printf("\n\n")
 }
 
 func GetBonusString(bonus int) string {
 	if bonus >= 0 {
-		return fmt.Sprintf(" (+%d)", bonus)
+		return fmt.Sprintf("+%d", bonus)
 	}
 
-	return fmt.Sprintf(" (%d)", bonus)
+	return fmt.Sprintf("%d", bonus)
 }

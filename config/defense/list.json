@@ -1,0 +1,17 @@
+[
+  {
+    "index": 1,
+    "name": "Block",
+    "accuracy": 6
+  },
+  {
+    "index": 2,
+    "name": "Evade",
+    "accuracy": 4
+  },
+  {
+    "index": 3,
+    "name": "Counter",
+    "accuracy": 3
+  }
+]

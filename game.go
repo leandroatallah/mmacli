@@ -6,6 +6,8 @@ import (
 	"math"
 	"math/rand"
 	"mmacli/config"
+	"mmacli/config/attack"
+	"mmacli/config/defense"
 	"strconv"
 	"strings"
 )
@@ -59,12 +61,12 @@ func PlayersInitiative(players map[int]*Fighter) int {
 	}
 }
 
-func chooseAnAttack() (*config.Attack, error) {
+func chooseAnAttack() (*attack.Attack, error) {
 	fmt.Println("Choose your attack play:")
-	attackList := config.GetAllAttackList()
+	attackList := attack.GetAll()
 	for index, attack := range attackList {
 		bonus := GetBonusString(attack.AttackBonus)
-		fmt.Printf("[%d]: %s \t(Power: %s%d)\n", index, attack.Name, bonus, attack.AttackBonus)
+		fmt.Printf("[%d]: %s \t(Power: %s)\n", index, attack.Name, bonus)
 	}
 	choiceString, err := ReadChar()
 	if err != nil {
@@ -76,7 +78,7 @@ func chooseAnAttack() (*config.Attack, error) {
 		return nil, err
 	}
 
-	attack, exists := config.GetAttackByIndex(choice)
+	attack, exists := attack.GetByIndex(choice)
 	if !exists {
 		// TODO: Handle this error
 		return nil, fmt.Errorf("Invalid attack choice")
@@ -86,11 +88,6 @@ func chooseAnAttack() (*config.Attack, error) {
 }
 
 func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
-	err := config.LoadAttackList("config/attacks.json")
-	if err != nil {
-		log.Fatal("error on load attack list:", err)
-	}
-
 	opponentIndex := Swap[currentPlayerIndex]
 	playerName := GetPlayer(currentPlayerIndex, players).name
 	opponentName := GetPlayer(opponentIndex, players).name
@@ -106,6 +103,7 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 	TimeDelay()
 
 	power := RollDice()
+	// TODO: Replace with a function to get a flag
 	isCritical := config.Flags["enableCriticalHit"] && power == 6
 	isFail := config.Flags["enableCriticalFail"] && power == 1
 	criticalText := ""
@@ -117,7 +115,7 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 	fmt.Printf("- %s rolls: ", playerName)
 	TimeDelay()
 	bonus := GetBonusString(attack.AttackBonus)
-	fmt.Printf("%d (%s%d) %s\n", power, bonus, attack.AttackBonus, criticalText)
+	fmt.Printf("%d (%s) %s\n", power, bonus, criticalText)
 	power += attack.AttackBonus
 	TimeDelay()
 
@@ -159,42 +157,41 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 }
 
 type Defense struct {
-	name      string
-	threshold int // Minimum roll required for success
-}
-
-// TODO: Convert to a JSON file
-var defenseList = map[string]Defense{
-	"1": {"Block", 6},   // 100%
-	"2": {"Evade", 4},   // 66%
-	"3": {"Counter", 3}, // 50%
+	name     string
+	accuracy int // Minimum roll required for success
 }
 
 func PlayerDefense(defenderIndex, bonus int, players map[int]*Fighter) (int, error) {
+	defenseList := defense.GetAll()
 	playerName := GetPlayer(defenderIndex, players).name
 	fmt.Printf("\n%s choose your defense:\n", playerName)
 	for index, defense := range defenseList {
 		// TODO: Improve varible names
-		threshold := defense.threshold
-		if defense.threshold != 6 {
-			threshold = min(5, threshold+bonus)
+		accuracy := defense.Accuracy
+		if defense.Accuracy != 6 {
+			accuracy = min(5, accuracy+bonus)
 		}
-		successChance := float64(MaxDiceNumber - threshold)
+		successChance := float64(MaxDiceNumber - accuracy)
 		precision := 1 - (successChance / float64(MaxDiceNumber))
 		precisionFormated := min(100, int((precision)*100))
-		fmt.Printf("[%s]: %s \t(%d%%)\n", index, defense.name, precisionFormated)
+		fmt.Printf("[%d]: %s \t(%d%%)\n", index, defense.Name, precisionFormated)
 	}
-	choice, err := ReadChar()
+	choiceString, err := ReadChar()
 	if err != nil {
 		return 0, err
 	}
 
-	defense, exists := defenseList[choice]
+	choice, err := strconv.Atoi(choiceString)
+	if err != nil {
+		return 0, err
+	}
+
+	defense, exists := defense.GetByIndex(choice)
 	if !exists {
 		return 0, fmt.Errorf("Invalid defense choice")
 	}
 
-	defenseName := strings.ToLower(defense.name)
+	defenseName := strings.ToLower(defense.Name)
 
 	TimeDelay()
 	fmt.Printf("\n- %s tries to %s\n", playerName, defenseName)
@@ -204,11 +201,12 @@ func PlayerDefense(defenderIndex, bonus int, players map[int]*Fighter) (int, err
 	TimeDelay()
 	fmt.Printf("%d\n", roll)
 	TimeDelay()
-	switch defense {
-	case defenseList["1"]:
+
+	switch defense.Index {
+	case 1:
 		return roll, nil
-	case defenseList["2"], defenseList["3"]:
-		if defense.threshold+bonus > MaxDiceNumber-roll {
+	case 2, 3:
+		if defense.Accuracy+bonus > MaxDiceNumber-roll {
 			fmt.Printf("- %s successfully %ss\n", playerName, defenseName)
 			return math.MaxInt, nil
 		}
