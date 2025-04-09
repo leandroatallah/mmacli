@@ -24,7 +24,7 @@ func PlayersInitiative(players map[int]*Fighter) int {
 
 		for _, p := range []p{p1, p2} {
 			myfmt.PrintDelay("- %s rolls: ", p.name)
-			myfmt.PrintDelay("%d", p.roll)
+			myfmt.PrintDelay("%d\n", p.roll)
 		}
 
 		if p1.roll > p2.roll {
@@ -34,16 +34,17 @@ func PlayersInitiative(players map[int]*Fighter) int {
 			myfmt.PrintDelay("- %s (player 2) is next to play\n\n", p2.name)
 			return 2
 		}
-		myfmt.PrintDelay("- Draw...")
+		myfmt.PrintDelay("- Draw...\n")
 	}
 }
 
+// TODO: Move to attack package
 func chooseAnAttack() (*attack.Attack, error) {
-	myfmt.PrintDelay("Choose your attack play:")
+	myfmt.PrintDelay("Choose your attack play:\n")
 	attackList := attack.GetAll()
-	for index, attack := range attackList {
+	for _, attack := range attackList {
 		bonus := GetBonusString(attack.AttackBonus)
-		fmt.Printf("[%d]: %s \t(Power: %s)\n", index, attack.Name, bonus)
+		fmt.Printf("[%d]: %s \t(Power: %s)\n", attack.Index, attack.Name, bonus)
 	}
 	choiceString, err := ReadChar()
 	if err != nil {
@@ -64,6 +65,7 @@ func chooseAnAttack() (*attack.Attack, error) {
 	return attack, nil
 }
 
+// TODO: Move to attack package
 func handleCriticalAttack(roll int) (isCritical bool, isFail bool) {
 	enableCriticalHit := flags.GetById("enableCriticalHit")
 	enableCriticalFail := flags.GetById("enableCriticalFail")
@@ -74,6 +76,7 @@ func handleCriticalAttack(roll int) (isCritical bool, isFail bool) {
 	return
 }
 
+// TODO: Move to attack package
 func getCriticalAttackText(isCritical, isFail bool) string {
 	if isCritical {
 		return "[CRITICAL HIT!]"
@@ -84,6 +87,7 @@ func getCriticalAttackText(isCritical, isFail bool) string {
 	return ""
 }
 
+// TODO: Move to attack package
 func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 	opponentIndex := Swap[currentPlayerIndex]
 	playerName := GetPlayer(currentPlayerIndex, players).name
@@ -138,15 +142,11 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 	return nil
 }
 
-type Defense struct {
-	name     string
-	accuracy int // Minimum roll required for success
-}
-
+// TODO: Move to defense package
 func chooseAnDefense(playerName string, bonus int) (*defense.Defense, error) {
 	fmt.Printf("\n%s choose your defense:\n", playerName)
 	defenseList := defense.GetAll()
-	for index, defense := range defenseList {
+	for _, defense := range defenseList {
 		// TODO: Improve varible names
 		accuracy := defense.Accuracy
 		if defense.Accuracy != 6 {
@@ -155,7 +155,7 @@ func chooseAnDefense(playerName string, bonus int) (*defense.Defense, error) {
 		successChance := float64(MaxDiceNumber - accuracy)
 		precision := 1 - (successChance / float64(MaxDiceNumber))
 		precisionFormated := min(100, int((precision)*100))
-		fmt.Printf("[%d]: %s \t(%d%%)\n", index, defense.Name, precisionFormated)
+		fmt.Printf("[%d]: %s \t(%d%%)\n", defense.Index, defense.Name, precisionFormated)
 	}
 	choiceString, err := ReadChar()
 	if err != nil {
@@ -175,6 +175,7 @@ func chooseAnDefense(playerName string, bonus int) (*defense.Defense, error) {
 	return defense, nil
 }
 
+// TODO: Move to defense package
 func PlayerDefense(defenderIndex, bonus int, players map[int]*Fighter) (int, error) {
 	playerName := GetPlayer(defenderIndex, players).name
 	defense, err := chooseAnDefense(playerName, bonus)

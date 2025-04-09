@@ -1,13 +1,15 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"mmacli/config/attack"
+	"mmacli/config/defense"
+	"mmacli/config/flags"
 )
 
 var sampleNames = map[int]string{1: "Anderson Silva", 2: "Chael Sonnen"}
-var Players map[int]*Fighter
 
 func CreateFighter(index int) Fighter {
 	fmt.Printf("Type the name of fighter %d: ", index)
@@ -37,11 +39,35 @@ func SetupAttackList() {
 	}
 }
 
+func loadAssets() error {
+	if err := flags.LoadList("config/flags/flags.json"); err != nil {
+		return fmt.Errorf("Error loading feature flags: %e", err)
+	}
+	if err := attack.LoadList("config/attack/list.json"); err != nil {
+		return fmt.Errorf("error on load attack list: %e", err)
+	}
+	if err := defense.LoadList("config/defense/list.json"); err != nil {
+		return fmt.Errorf("error on load defense list: %e", err)
+	}
+
+	return nil
+}
+
+func setupCLIFlags() {
+	flag.Parse()
+	if *HideDelayFlag {
+		Delay = 0
+	}
+}
+
 func SetupGame() error {
 	fmt.Printf("# Welcome to MMA CLI\n\n")
 
+	setupCLIFlags()
 	SetupPlayers()
-	SetupAttackList()
+	if err := loadAssets(); err != nil {
+		return err
+	}
 
 	return nil
 }

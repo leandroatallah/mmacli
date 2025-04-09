@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 )
 
@@ -19,4 +20,27 @@ func RollDice() int {
 
 func GetPlayer(currentPlayerIndex int, players map[int]*Fighter) *Fighter {
 	return players[currentPlayerIndex]
+}
+
+func GameLoop() {
+	var currentPlayerIndex int
+	shouldRunInitiative := true
+
+	for CheckGameOver(Players) == false {
+		TimeDelay()
+		if shouldRunInitiative {
+			currentPlayerIndex = PlayersInitiative(Players)
+		}
+
+		opponentIndex := Swap[currentPlayerIndex]
+		PlayerAttack(currentPlayerIndex, Players)
+		TimeDelay()
+
+		PrintStatus(Players)
+
+		currentPlayerIndex = opponentIndex
+		shouldRunInitiative = !shouldRunInitiative
+	}
+
+	fmt.Println("Game over")
 }
