@@ -35,6 +35,7 @@ func PlayersInitiative(players map[int]*Fighter) int {
 			return 2
 		}
 		myfmt.PrintDelay("- Draw...\n")
+		AddClockTime()
 	}
 }
 
