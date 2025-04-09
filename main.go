@@ -27,32 +27,21 @@ func init() {
 	myfmt.SetDelayCallback(TimeDelay)
 }
 
-func main() {
-	// Load assets
-	err := flags.LoadList("config/flags.json")
-	if err != nil {
-		log.Fatal("Error loading feature flags:", err)
+func loadAssets() error {
+	if err := flags.LoadList("config/flags.json"); err != nil {
+		return fmt.Errorf("Error loading feature flags: %e", err)
 	}
-	err = attack.LoadList("config/attacks.json")
-	if err != nil {
-		log.Fatal("error on load attack list:", err)
+	if err := attack.LoadList("config/attacks.json"); err != nil {
+		return fmt.Errorf("error on load attack list: %e", err)
 	}
-	err = defense.LoadList("config/defenses.json")
-	if err != nil {
-		log.Fatal("error on load defense list:", err)
+	if err := defense.LoadList("config/defenses.json"); err != nil {
+		return fmt.Errorf("error on load defense list: %e", err)
 	}
 
-	// Setup command-line flags
-	flag.Parse()
-	if *HideDelayFlag {
-		Delay = 0
-	}
+	return nil
+}
 
-	err = SetupGame()
-	if err != nil {
-		log.Fatal("Error on setup game:", err)
-	}
-
+func gameLoop() {
 	var currentPlayerIndex int
 	shouldRunInitiative := true
 
@@ -73,4 +62,23 @@ func main() {
 	}
 
 	fmt.Println("Game over")
+}
+
+func main() {
+	// Load assets
+	if err := loadAssets(); err != nil {
+		log.Fatal(err)
+	}
+
+	// Setup command-line flags
+	flag.Parse()
+	if *HideDelayFlag {
+		Delay = 0
+	}
+
+	if err := SetupGame(); err != nil {
+		log.Fatal("Error on setup game:", err)
+	}
+
+	gameLoop()
 }
