@@ -5,9 +5,10 @@ import (
 	"log"
 	"math"
 	"math/rand"
-	"mmacli/config"
 	"mmacli/config/attack"
 	"mmacli/config/defense"
+	"mmacli/config/flags"
+	"mmacli/myfmt"
 	"strconv"
 	"strings"
 )
@@ -30,8 +31,7 @@ func GetPlayer(currentPlayerIndex int, players map[int]*Fighter) *Fighter {
 }
 
 func PlayersInitiative(players map[int]*Fighter) int {
-	fmt.Printf("\n# Players roll initiative\n\n")
-	TimeDelay()
+	myfmt.PrintDelay("\n# Players roll initiative\n\n")
 	for {
 		type p struct {
 			name string
@@ -41,28 +41,23 @@ func PlayersInitiative(players map[int]*Fighter) int {
 		p2 := p{GetPlayer(2, players).name, RollDice()}
 
 		for _, p := range []p{p1, p2} {
-			fmt.Printf("- %s rolls: ", p.name)
-			TimeDelay()
-			fmt.Println(p.roll)
-			TimeDelay()
+			myfmt.PrintDelay("- %s rolls: ", p.name)
+			myfmt.PrintDelay("%d", p.roll)
 		}
 
 		if p1.roll > p2.roll {
-			fmt.Printf("- %s (player 1) is next to play\n\n", p1.name)
-			TimeDelay()
+			myfmt.PrintDelay("- %s (player 1) is next to play\n\n", p1.name)
 			return 1
 		} else if p2.roll > p1.roll {
-			fmt.Printf("- %s (player 2) is next to play\n\n", p2.name)
-			TimeDelay()
+			myfmt.PrintDelay("- %s (player 2) is next to play\n\n", p2.name)
 			return 2
 		}
-		fmt.Println("- Draw...")
-		TimeDelay()
+		myfmt.PrintDelay("- Draw...")
 	}
 }
 
 func chooseAnAttack() (*attack.Attack, error) {
-	fmt.Println("Choose your attack play:")
+	myfmt.PrintDelay("Choose your attack play:")
 	attackList := attack.GetAll()
 	for index, attack := range attackList {
 		bonus := GetBonusString(attack.AttackBonus)
@@ -87,6 +82,26 @@ func chooseAnAttack() (*attack.Attack, error) {
 	return attack, nil
 }
 
+func handleCriticalAttack(roll int) (isCritical bool, isFail bool) {
+	enableCriticalHit := flags.GetById("enableCriticalHit")
+	enableCriticalFail := flags.GetById("enableCriticalFail")
+
+	isCritical = enableCriticalHit && roll == 6
+	isFail = enableCriticalFail && roll == 1
+
+	return
+}
+
+func getCriticalAttackText(isCritical, isFail bool) string {
+	if isCritical {
+		return "[CRITICAL HIT!]"
+	} else if isFail {
+		return "[CRITICAL FAIL!]"
+	}
+
+	return ""
+}
+
 func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 	opponentIndex := Swap[currentPlayerIndex]
 	playerName := GetPlayer(currentPlayerIndex, players).name
@@ -99,25 +114,14 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 		log.Fatal("Error on choose attack:", err)
 	}
 
-	fmt.Printf("\n- %s tries to hit a %s\n", playerName, strings.ToLower(attack.Name))
-	TimeDelay()
-
+	myfmt.PrintDelay("\n- %s tries to hit a %s\n", playerName, strings.ToLower(attack.Name))
 	power := RollDice()
-	// TODO: Replace with a function to get a flag
-	isCritical := config.Flags["enableCriticalHit"] && power == 6
-	isFail := config.Flags["enableCriticalFail"] && power == 1
-	criticalText := ""
-	if isCritical {
-		criticalText = "[CRITICAL HIT!]"
-	} else if isFail {
-		criticalText = "[CRITICAL FAIL!]"
-	}
-	fmt.Printf("- %s rolls: ", playerName)
-	TimeDelay()
+	myfmt.PrintDelay("- %s rolls: ", playerName)
 	bonus := GetBonusString(attack.AttackBonus)
-	fmt.Printf("%d (%s) %s\n", power, bonus, criticalText)
+	isCritical, isFail := handleCriticalAttack(power)
+	criticalText := getCriticalAttackText(isCritical, isFail)
+	myfmt.PrintDelay("%d (%s) %s\n", power, bonus, criticalText)
 	power += attack.AttackBonus
-	TimeDelay()
 
 	if isFail {
 		fmt.Printf("- %s missed the attack\n\n", playerName)
@@ -127,12 +131,9 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 	if isCritical {
 		bonus := RollDice()
 		power += bonus
-		fmt.Printf("- %s rolls a bonus: ", playerName)
-		TimeDelay()
-		fmt.Printf("%d\n", bonus)
-		TimeDelay()
-		fmt.Printf("- %s attack is: %d (%d + %d)\n\n", playerName, power, power-bonus, bonus)
-		TimeDelay()
+		myfmt.PrintDelay("- %s rolls a bonus: ", playerName)
+		myfmt.PrintDelay("%d\n", bonus)
+		myfmt.PrintDelay("- %s attack is: %d (%d + %d)\n\n", playerName, power, power-bonus, bonus)
 	}
 
 	defense, err := PlayerDefense(opponentIndex, attack.AttackBonus, players)
@@ -142,11 +143,10 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 
 	damage := max(power-defense, 0)
 	if damage > 0 {
-		fmt.Printf("- %s suffered %d of damage\n", opponentName, damage)
+		myfmt.PrintDelay("- %s suffered %d of damage\n", opponentName, damage)
 	} else {
-		fmt.Printf("- %s doesn't suffered any damage\n", opponentName)
+		myfmt.PrintDelay("- %s doesn't suffered any damage\n", opponentName)
 	}
-	TimeDelay()
 	opponent := players[opponentIndex]
 	opponent.health -= damage
 	if opponent.health < 0 {
@@ -193,14 +193,11 @@ func PlayerDefense(defenderIndex, bonus int, players map[int]*Fighter) (int, err
 
 	defenseName := strings.ToLower(defense.Name)
 
-	TimeDelay()
-	fmt.Printf("\n- %s tries to %s\n", playerName, defenseName)
-	TimeDelay()
+	myfmt.PrintDelay("")
+	myfmt.PrintDelay("\n- %s tries to %s\n", playerName, defenseName)
 	roll := RollDice()
-	fmt.Printf("- %s rolls: ", playerName)
-	TimeDelay()
-	fmt.Printf("%d\n", roll)
-	TimeDelay()
+	myfmt.PrintDelay("- %s rolls: ", playerName)
+	myfmt.PrintDelay("%d\n", roll)
 
 	switch defense.Index {
 	case 1:

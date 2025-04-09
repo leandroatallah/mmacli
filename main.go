@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"mmacli/config"
 	"mmacli/config/attack"
 	"mmacli/config/defense"
+	"mmacli/config/flags"
+	"mmacli/myfmt"
 	"time"
 )
 
@@ -21,11 +22,14 @@ var HideDelayFlag = flag.Bool("quick", false, "Skip delays")
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
+
+	// Init delay callback to sync delay behavior
+	myfmt.SetDelayCallback(TimeDelay)
 }
 
 func main() {
 	// Load assets
-	err := config.LoadFeatureFlags("config/flags.json")
+	err := flags.LoadList("config/flags.json")
 	if err != nil {
 		log.Fatal("Error loading feature flags:", err)
 	}
