@@ -31,27 +31,26 @@ func PlayersInitiative(players map[int]*Fighter) int {
 	fmt.Printf("\n# Players roll initiative\n\n")
 	TimeDelay()
 	for {
-		playerOne := RollDice()
-		playerTwo := RollDice()
+		type p struct {
+			name string
+			roll int
+		}
+		p1 := p{GetPlayer(1, players).name, RollDice()}
+		p2 := p{GetPlayer(2, players).name, RollDice()}
 
-		p1Name := GetPlayer(1, players).name
-		p2Name := GetPlayer(2, players).name
-		fmt.Printf("- %s rolls: ", p1Name)
-		TimeDelay()
-		fmt.Println(playerOne)
-		TimeDelay()
+		for _, p := range []p{p1, p2} {
+			fmt.Printf("- %s rolls: ", p.name)
+			TimeDelay()
+			fmt.Println(p.roll)
+			TimeDelay()
+		}
 
-		fmt.Printf("- %s rolls: ", p2Name)
-		TimeDelay()
-		fmt.Println(playerTwo)
-		TimeDelay()
-
-		if playerOne > playerTwo {
-			fmt.Printf("- %s (player 1) is next to play\n\n", p1Name)
+		if p1.roll > p2.roll {
+			fmt.Printf("- %s (player 1) is next to play\n\n", p1.name)
 			TimeDelay()
 			return 1
-		} else if playerTwo > playerOne {
-			fmt.Printf("- %s (player 2) is next to play\n\n", p2Name)
+		} else if p2.roll > p1.roll {
+			fmt.Printf("- %s (player 2) is next to play\n\n", p2.name)
 			TimeDelay()
 			return 2
 		}
@@ -64,11 +63,8 @@ func chooseAnAttack() (*config.Attack, error) {
 	fmt.Println("Choose your attack play:")
 	attackList := config.GetAllAttackList()
 	for index, attack := range attackList {
-		plusSign := ""
-		if attack.AttackBonus >= 0 {
-			plusSign = "+"
-		}
-		fmt.Printf("[%d]: %s \t(Power: %s%d)\n", index, attack.Name, plusSign, attack.AttackBonus)
+		bonus := GetBonusString(attack.AttackBonus)
+		fmt.Printf("[%d]: %s \t(Power: %s%d)\n", index, attack.Name, bonus, attack.AttackBonus)
 	}
 	choiceString, err := ReadChar()
 	if err != nil {
@@ -120,7 +116,8 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 	}
 	fmt.Printf("- %s rolls: ", playerName)
 	TimeDelay()
-	fmt.Printf("%d (+%d) %s\n", power, attack.AttackBonus, criticalText)
+	bonus := GetBonusString(attack.AttackBonus)
+	fmt.Printf("%d (%s%d) %s\n", power, bonus, attack.AttackBonus, criticalText)
 	power += attack.AttackBonus
 	TimeDelay()
 

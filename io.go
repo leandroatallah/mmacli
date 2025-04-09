@@ -36,3 +36,11 @@ func PrintStatus(players map[int]*Fighter) {
 	}
 	fmt.Println()
 }
+
+func GetBonusString(bonus int) string {
+	if bonus >= 0 {
+		return fmt.Sprintf(" (+%d)", bonus)
+	}
+
+	return fmt.Sprintf(" (%d)", bonus)
+}
