@@ -34,6 +34,7 @@ func PlayersInitiative(players map[int]*Fighter) int {
 			myfmt.PrintDelay("- %s (player 2) is next to play\n\n", p2.name)
 			return 2
 		}
+		// TODO: Clear screen to add clock
 		myfmt.PrintDelay("- Draw...\n")
 		AddClockTime()
 	}
@@ -94,7 +95,7 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 	playerName := GetPlayer(currentPlayerIndex, players).name
 	opponentName := GetPlayer(opponentIndex, players).name
 
-	fmt.Printf("%s (player %d) turn\n", playerName, currentPlayerIndex)
+	fmt.Printf("# %s (player %d) turn\n\n", playerName, currentPlayerIndex)
 
 	attack, err := chooseAnAttack()
 	if err != nil {

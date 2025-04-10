@@ -7,6 +7,7 @@ import (
 	"mmacli/config/attack"
 	"mmacli/config/defense"
 	"mmacli/config/flags"
+	"mmacli/myfmt"
 )
 
 var sampleNames = map[int]string{1: "Anderson Silva", 2: "Chael Sonnen"}
@@ -14,7 +15,7 @@ var sampleNames = map[int]string{1: "Anderson Silva", 2: "Chael Sonnen"}
 func CreateFighter(index int) Fighter {
 	fmt.Printf("Type the name of fighter %d: ", index)
 	name := ""
-	if *HideDelayFlag {
+	if *UseMockFlag {
 		name = sampleNames[index]
 	} else {
 		name = ReadString()
@@ -61,9 +62,9 @@ func setupCLIFlags() {
 }
 
 func SetupGame() error {
-	fmt.Printf("# Welcome to MMA CLI\n\n")
-
+	myfmt.PrintDelay("# Welcome to MMA CLI\n\n")
 	setupCLIFlags()
+	// TODO: Add Bruce Buffer introduce
 	SetupPlayers()
 	if err := loadAssets(); err != nil {
 		return err

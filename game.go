@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 	"math/rand"
-	"mmacli/myfmt"
 	"time"
 )
 
-var Clock time.Time
+var clock time.Duration = (60 + 60 + 30) * time.Second
+var round int = 1
 
 func CheckGameOver(players map[int]*Fighter) bool {
 	for _, p := range players {
@@ -25,7 +25,15 @@ func RollDice() int {
 func AddClockTime() {
 	roll := RollDice()
 	// TODO: Limit to round time limit
-	Clock = Clock.Add(time.Duration(roll) * time.Second)
+	// clock = clock.Add(time.Duration(roll) * time.Second)
+	clock -= time.Duration(roll) * time.Second
+}
+
+func GetClockTime() string {
+	clockInSecs := int(clock / time.Second)
+	m := clockInSecs / 60
+	s := clockInSecs - (m * 60)
+	return fmt.Sprintf("%02d:%02d\n\n", m, s)
 }
 
 func GetPlayer(currentPlayerIndex int, players map[int]*Fighter) *Fighter {
@@ -37,26 +45,37 @@ func GameLoop() {
 	shouldRunInitiative := true
 
 	for CheckGameOver(Players) == false {
-		formattedClock := Clock.Format("15:04:05")
-		myfmt.PrintDelay("%v\n\n", formattedClock[3:])
+		PrintStatus(Players)
 		if shouldRunInitiative {
 			currentPlayerIndex = PlayersInitiative(Players)
+			PressEnter()
+			PrintStatus(Players)
 		}
 
 		opponentIndex := Swap[currentPlayerIndex]
 		PlayerAttack(currentPlayerIndex, Players)
 		TimeDelay()
+		PressEnter()
 
 		for range 5 {
 			AddClockTime()
 		}
 
-		PrintStatus(Players)
-
 		currentPlayerIndex = opponentIndex
 		shouldRunInitiative = !shouldRunInitiative
-
 	}
 
 	fmt.Println("Game over")
+}
+
+func GetRound() string {
+	return fmt.Sprintf("%d", round)
+}
+
+func PressEnter() {
+	fmt.Printf("\n\nPress [ENTER] to continue.")
+	if *NoPressEnterFlag {
+		return
+	}
+	ReadChar()
 }
