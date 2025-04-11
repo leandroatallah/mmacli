@@ -7,20 +7,21 @@ import (
 	"mmacli/config/attack"
 	"mmacli/config/defense"
 	"mmacli/config/flags"
+	"mmacli/models"
 	"mmacli/myfmt"
 	"strconv"
 	"strings"
 )
 
-func PlayersInitiative(players map[int]*Fighter) int {
+func PlayersInitiative() int {
 	myfmt.PrintDelay("\n# Players roll initiative\n\n")
 	for {
 		type p struct {
 			name string
 			roll int
 		}
-		p1 := p{GetPlayer(1, players).name, RollDice()}
-		p2 := p{GetPlayer(2, players).name, RollDice()}
+		p1 := p{models.GetPlayerByIndex(1).Name, RollDice()}
+		p2 := p{models.GetPlayerByIndex(2).Name, RollDice()}
 
 		for _, p := range []p{p1, p2} {
 			myfmt.PrintDelay("- %s rolls: ", p.name)
@@ -90,10 +91,11 @@ func getCriticalAttackText(isCritical, isFail bool) string {
 }
 
 // TODO: Move to attack package
-func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
+func PlayerAttack(currentPlayerIndex int) error {
+	players := models.GetPlayers()
 	opponentIndex := Swap[currentPlayerIndex]
-	playerName := GetPlayer(currentPlayerIndex, players).name
-	opponentName := GetPlayer(opponentIndex, players).name
+	playerName := models.GetPlayerByIndex(currentPlayerIndex).Name
+	opponentName := models.GetPlayerByIndex(opponentIndex).Name
 
 	fmt.Printf("# %s (player %d) turn\n\n", playerName, currentPlayerIndex)
 
@@ -136,9 +138,9 @@ func PlayerAttack(currentPlayerIndex int, players map[int]*Fighter) error {
 		myfmt.PrintDelay("- %s doesn't suffered any damage\n", opponentName)
 	}
 	opponent := players[opponentIndex]
-	opponent.health -= damage
-	if opponent.health < 0 {
-		opponent.health = 0
+	opponent.Health -= damage
+	if opponent.Health < 0 {
+		opponent.Health = 0
 	}
 
 	return nil
@@ -178,8 +180,8 @@ func chooseAnDefense(playerName string, bonus int) (*defense.Defense, error) {
 }
 
 // TODO: Move to defense package
-func PlayerDefense(defenderIndex, bonus int, players map[int]*Fighter) (int, error) {
-	playerName := GetPlayer(defenderIndex, players).name
+func PlayerDefense(defenderIndex, bonus int, players map[int]*models.Fighter) (int, error) {
+	playerName := models.GetPlayerByIndex(defenderIndex).Name
 	defense, err := chooseAnDefense(playerName, bonus)
 	if err != nil {
 		return 0, err

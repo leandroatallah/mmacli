@@ -7,12 +7,13 @@ import (
 	"mmacli/config/attack"
 	"mmacli/config/defense"
 	"mmacli/config/flags"
+	"mmacli/models"
 	"mmacli/myfmt"
 )
 
 var sampleNames = map[int]string{1: "Anderson Silva", 2: "Chael Sonnen"}
 
-func CreateFighter(index int) Fighter {
+func CreateFighter(index int) models.Fighter {
 	fmt.Printf("Type the name of fighter %d: ", index)
 	name := ""
 	if *UseMockFlag {
@@ -20,17 +21,17 @@ func CreateFighter(index int) Fighter {
 	} else {
 		name = ReadString()
 	}
-	health := MaxHealth
-	return Fighter{name, health}
+	return models.Fighter{Name: name, Health: MaxHealth}
 }
 
 func SetupPlayers() {
 	fighterOne := CreateFighter(1)
 	fighterTwo := CreateFighter(2)
 
-	WriteString(fmt.Sprintf("\n== %s versus %s ==\n", fighterOne.name, fighterTwo.name))
+	WriteString(fmt.Sprintf("\n== %s versus %s ==\n\n", fighterOne.Name, fighterTwo.Name))
+	TimeDelay()
 
-	Players = map[int]*Fighter{1: &fighterOne, 2: &fighterTwo}
+	models.SetPlayers(map[int]*models.Fighter{1: &fighterOne, 2: &fighterTwo})
 }
 
 func SetupAttackList() {
@@ -69,6 +70,7 @@ func SetupGame() error {
 	if err := loadAssets(); err != nil {
 		return err
 	}
+	AnouncerPresentation()
 
 	return nil
 }

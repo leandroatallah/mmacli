@@ -3,6 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"mmacli/models"
+	"mmacli/myfmt"
 	"os"
 	"os/exec"
 	"runtime"
@@ -44,75 +46,38 @@ func WriteString(text string) error {
 	return err
 }
 
-func PrintStatus(players map[int]*Fighter) {
+func PrintStatus() {
 	ClearScreen()
-
+	players := models.GetPlayers()
 	clock := GetClockTime()
 
-	p1NameLen := len(players[1].name)
-	p2NameLen := len(players[2].name)
-	damageOffset := 6
-	playersNameLen := max(p1NameLen, p2NameLen, 9) + damageOffset
+	// Get names length. Minimun of 9 plus 6 offset
+	nameLen := max(len(players[1].Name), len(players[2].Name), 9) + 6
+	padding := strings.Repeat(" ", (nameLen-6)/2)
 
-	// line
-	line := ""
-	for range playersNameLen + 8 {
-		line += "#"
-	}
-	line += "\n"
+	line := strings.Repeat("#", nameLen+8) + "\n"
+	lineWithSpaces := "## " + strings.Repeat(" ", nameLen+2) + " ##"
 
-	// line with spaces
-	lineWithSpaces := "## "
-	for range playersNameLen + 2 {
-		lineWithSpaces += " "
-	}
-	lineWithSpaces += " ##"
-
-	// Clock
 	lineClock := func() string {
-		leading := ""
-		additionalSpace := playersNameLen%2 == 0
-		for range (playersNameLen - 7) / 2 {
-			leading += " "
+		clockStr := fmt.Sprintf("[%v]", strings.TrimSpace(clock))
+		extra := ""
+		if nameLen%2 == 0 {
+			extra = " "
 		}
-		clockTrim := fmt.Sprintf("[%v]", strings.TrimSpace(clock))
-		result := "##  " + leading + clockTrim + leading
-		if additionalSpace {
-			result += " "
-		}
-		result += "  ##"
-
-		return result
+		return "## " + padding + clockStr + padding + extra + " ##"
 	}
 
-	// Round
-	lineRound := func() string {
-		leading := ""
-		additionalSpace := playersNameLen%2 == 0
-		for range (playersNameLen - 7) / 2 {
-			leading += " "
-		}
-		result := fmt.Sprintf("##  %sRound %s%s", leading, GetRound(), leading)
-		if additionalSpace {
-			result += " "
-		}
-		result += "  ##"
-		return result
-	}
+	lineRound := "## " + padding + "Round " + GetRound() + padding + "  ##"
 
-	// Players name
 	playersName := func() string {
 		result := ""
 		for _, p := range players {
-			remainSpace := playersNameLen - len(p.name) - 2
-			result += fmt.Sprintf("##  %s", p.name)
-			for range remainSpace {
+			result += fmt.Sprintf("##  %s", p.Name)
+			result += strings.Repeat(" ", nameLen-len(p.Name)-2)
+			if p.Health < 10 {
 				result += " "
 			}
-			if p.health < 10 {
-				result += " "
-			}
-			result += fmt.Sprintf("%d  ##\n", p.health)
+			result += fmt.Sprintf("%d  ##\n", p.Health)
 		}
 		return result
 	}
@@ -120,7 +85,7 @@ func PrintStatus(players map[int]*Fighter) {
 	// Print status
 	fmt.Print(line)
 	fmt.Println(lineWithSpaces)
-	fmt.Println(lineRound())
+	fmt.Println(lineRound)
 	fmt.Println(lineClock())
 	fmt.Println(lineWithSpaces)
 	fmt.Print(playersName())
@@ -134,4 +99,21 @@ func GetBonusString(bonus int) string {
 	}
 
 	return fmt.Sprintf("%d", bonus)
+}
+
+func AnouncerPresentation() {
+	players := models.GetPlayers()
+
+	myfmt.PrintDelay("\"Ladies and Gentlemen.\"\n")
+	// myfmt.PrintDelay("\"This is the moment you’ve all been waiting for!\"\n")
+	myfmt.PrintDelay("\"This is the main event of the evening!\"\n")
+	myfmt.PrintDelay("\"And now... ")
+	myfmt.PrintDelay("It's time!\"\n")
+	myfmt.PrintDelay("\"Introducing first...\"\n")
+	myfmt.PrintDelay("\"In the left corner: ")
+	myfmt.PrintDelay("%s\"\n", players[1].Name)
+	myfmt.PrintDelay("\"And now, introducing his opponent...\"\n")
+	myfmt.PrintDelay("\"In the right corner: ")
+	myfmt.PrintDelay("%s\"\n", players[2].Name)
+	PressEnter()
 }

@@ -3,15 +3,16 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"mmacli/models"
 	"time"
 )
 
 var clock time.Duration = (60 + 60 + 30) * time.Second
 var round int = 1
 
-func CheckGameOver(players map[int]*Fighter) bool {
-	for _, p := range players {
-		if p.health <= 0 {
+func CheckGameOver() bool {
+	for _, p := range models.GetPlayers() {
+		if p.Health <= 0 {
 			return true
 		}
 	}
@@ -36,24 +37,20 @@ func GetClockTime() string {
 	return fmt.Sprintf("%02d:%02d\n\n", m, s)
 }
 
-func GetPlayer(currentPlayerIndex int, players map[int]*Fighter) *Fighter {
-	return players[currentPlayerIndex]
-}
-
 func GameLoop() {
 	var currentPlayerIndex int
 	shouldRunInitiative := true
 
-	for CheckGameOver(Players) == false {
-		PrintStatus(Players)
+	for CheckGameOver() == false {
+		PrintStatus()
 		if shouldRunInitiative {
-			currentPlayerIndex = PlayersInitiative(Players)
+			currentPlayerIndex = PlayersInitiative()
 			PressEnter()
-			PrintStatus(Players)
+			PrintStatus()
 		}
 
 		opponentIndex := Swap[currentPlayerIndex]
-		PlayerAttack(currentPlayerIndex, Players)
+		PlayerAttack(currentPlayerIndex)
 		TimeDelay()
 		PressEnter()
 
