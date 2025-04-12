@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"math/rand"
 	"mmacli/myfmt"
@@ -15,6 +16,8 @@ func init() {
 }
 
 func main() {
+	flag.Parse()
+
 	ClearScreen()
 	if err := SetupGame(); err != nil {
 		log.Fatal("Error on setup game:", err)

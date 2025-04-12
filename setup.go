@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"mmacli/config/attack"
@@ -14,11 +13,11 @@ import (
 var sampleNames = map[int]string{1: "Anderson Silva", 2: "Chael Sonnen"}
 
 func CreateFighter(index int) models.Fighter {
-	fmt.Printf("Type the name of fighter %d: ", index)
 	name := ""
-	if *UseMockFlag {
+	if GetCliFlag("mock") || GetCliFlag("m") {
 		name = sampleNames[index]
 	} else {
+		fmt.Printf("Type the name of fighter %d: ", index)
 		name = ReadString()
 	}
 	return models.Fighter{Name: name, Health: MaxHealth}
@@ -55,17 +54,12 @@ func loadAssets() error {
 	return nil
 }
 
-func setupCLIFlags() {
-	flag.Parse()
-	if *HideDelayFlag {
+func SetupGame() error {
+	if GetCliFlag("quick") || GetCliFlag("q") {
 		Delay = 0
 	}
-}
 
-func SetupGame() error {
 	myfmt.PrintDelay("# Welcome to MMA CLI\n\n")
-	setupCLIFlags()
-	// TODO: Add Bruce Buffer introduce
 	SetupPlayers()
 	if err := loadAssets(); err != nil {
 		return err

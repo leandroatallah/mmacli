@@ -71,7 +71,7 @@ func GetRound() string {
 
 func PressEnter() {
 	fmt.Printf("\n\nPress [ENTER] to continue.")
-	if *NoPressEnterFlag {
+	if GetCliFlag("noenter") || GetCliFlag("n") {
 		return
 	}
 	ReadChar()
