@@ -25,9 +25,10 @@ func RollDice() int {
 
 func AddClockTime() {
 	roll := RollDice()
-	// TODO: Limit to round time limit
-	// clock = clock.Add(time.Duration(roll) * time.Second)
 	clock -= time.Duration(roll) * time.Second
+	if clock < 0 {
+		clock = 0
+	}
 }
 
 func GetClockTime() string {

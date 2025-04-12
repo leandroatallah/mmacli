@@ -19,6 +19,7 @@ var (
 		{"quick", "q", false, "Skip delays"},
 		{"noenter", "n", false, "Skip press enter command"},
 		{"mock", "m", false, "Use mock to fill players name"},
+		{"preserve", "p", false, "Don't clear screen"},
 	}
 	CliFlag = make(map[string]*bool)
 )

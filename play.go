@@ -37,6 +37,7 @@ func PlayersInitiative() int {
 		}
 		// TODO: Clear screen to add clock
 		myfmt.PrintDelay("- Draw...\n")
+		ClearScreen()
 		AddClockTime()
 	}
 }

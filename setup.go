@@ -8,6 +8,7 @@ import (
 	"mmacli/config/flags"
 	"mmacli/models"
 	"mmacli/myfmt"
+	"time"
 )
 
 var sampleNames = map[int]string{1: "Anderson Silva", 2: "Chael Sonnen"}
@@ -55,8 +56,9 @@ func loadAssets() error {
 }
 
 func SetupGame() error {
-	if GetCliFlag("quick") || GetCliFlag("q") {
-		Delay = 0
+	quickFlag := GetCliFlag("quick") || GetCliFlag("q")
+	if quickFlag {
+		Delay = 200 * time.Millisecond
 	}
 
 	myfmt.PrintDelay("# Welcome to MMA CLI\n\n")
@@ -64,7 +66,9 @@ func SetupGame() error {
 	if err := loadAssets(); err != nil {
 		return err
 	}
-	AnouncerPresentation()
+	if !quickFlag {
+		AnouncerPresentation()
+	}
 
 	return nil
 }

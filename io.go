@@ -12,6 +12,10 @@ import (
 )
 
 func ClearScreen() {
+	if GetCliFlag("preserve") || GetCliFlag("p") {
+		return
+	}
+
 	switch runtime.GOOS {
 	case "windows":
 		cmd := exec.Command("cmd", "/c", "cls")
