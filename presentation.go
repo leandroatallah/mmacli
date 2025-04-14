@@ -1,18 +1,30 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"mmacli/cliflags"
 	"mmacli/models"
 	"mmacli/myfmt"
+	"mmacli/utils"
 	"os"
 	"os/exec"
 	"runtime"
 	"strings"
+	"time"
 )
 
+var delay = 1 * time.Second
+
+func TimeDelay() {
+	time.Sleep(delay)
+}
+
+func SetTimeDelay(value time.Duration) {
+	delay = value
+}
+
 func ClearScreen() {
-	if GetCliFlag("preserve") || GetCliFlag("p") {
+	if cliflags.GetCliFlag("preserve") || cliflags.GetCliFlag("p") {
 		return
 	}
 
@@ -26,28 +38,12 @@ func ClearScreen() {
 	}
 }
 
-func ReadString() (text string) {
-	scanner := bufio.NewScanner(os.Stdin)
-
-	if scanner.Scan() {
-		text = scanner.Text()
+func PressEnter() {
+	fmt.Printf("\n\nPress [ENTER] to continue.")
+	if cliflags.GetCliFlag("noenter") || cliflags.GetCliFlag("n") {
+		return
 	}
-	return
-}
-
-func ReadChar() (string, error) {
-	line := ReadString()
-	if len(line) == 0 {
-		return "", fmt.Errorf("No input given")
-	}
-	return string([]rune(line)[0]), nil
-
-}
-
-func WriteString(text string) error {
-	out := os.Stdout
-	_, err := out.WriteString(text)
-	return err
+	utils.ReadChar()
 }
 
 func PrintStatus() {
@@ -86,7 +82,6 @@ func PrintStatus() {
 		return result
 	}
 
-	// Print status
 	fmt.Print(line)
 	fmt.Println(lineWithSpaces)
 	fmt.Println(lineRound)
@@ -95,14 +90,6 @@ func PrintStatus() {
 	fmt.Print(playersName())
 	fmt.Println(lineWithSpaces)
 	fmt.Println(line)
-}
-
-func GetBonusString(bonus int) string {
-	if bonus >= 0 {
-		return fmt.Sprintf("+%d", bonus)
-	}
-
-	return fmt.Sprintf("%d", bonus)
 }
 
 func AnouncerPresentation() {
@@ -119,5 +106,4 @@ func AnouncerPresentation() {
 	myfmt.PrintDelay("- \"And now, introducing his opponent...\"\n")
 	myfmt.PrintDelay("- \"In the right corner: ")
 	myfmt.PrintDelay("%s\"\n", players[2].Name)
-	PressEnter()
 }

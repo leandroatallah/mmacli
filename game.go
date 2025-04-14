@@ -2,15 +2,16 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
+	"mmacli/fight"
 	"mmacli/models"
+	"mmacli/utils"
 	"time"
 )
 
 var clock time.Duration = (60 + 60 + 30) * time.Second
 var round int = 1
 
-func CheckGameOver() bool {
+func checkGameOver() bool {
 	for _, p := range models.GetPlayers() {
 		if p.Health <= 0 {
 			return true
@@ -19,13 +20,9 @@ func CheckGameOver() bool {
 	return false
 }
 
-func RollDice() int {
-	return rand.Intn(6) + 1
-}
-
-func AddClockTime() {
+func addClockTime() {
 	for range 5 {
-		roll := RollDice()
+		roll := utils.RollDice()
 		clock -= time.Duration(roll) * time.Second
 		if clock < 0 {
 			clock = 0
@@ -47,21 +44,21 @@ func GameLoop() {
 		shouldRunInitiative = true
 	)
 
-	for CheckGameOver() == false {
+	for checkGameOver() == false {
 		PrintStatus()
-		AddClockTime()
+		addClockTime()
 
 		if shouldRunInitiative {
 			currentPlayerIndex, isDraw = PlayersInitiative()
 			PressEnter()
-			ClearScreen()
 			if isDraw {
 				continue
 			}
 		}
 
-		opponentIndex := Swap[currentPlayerIndex]
-		PlayerAttack(currentPlayerIndex)
+		PrintStatus()
+		opponentIndex := utils.Swap[currentPlayerIndex]
+		fight.PlayerAttack(currentPlayerIndex)
 		currentPlayerIndex = opponentIndex
 		shouldRunInitiative = !shouldRunInitiative
 
@@ -74,12 +71,4 @@ func GameLoop() {
 
 func GetRound() string {
 	return fmt.Sprintf("%d", round)
-}
-
-func PressEnter() {
-	fmt.Printf("\n\nPress [ENTER] to continue.")
-	if GetCliFlag("noenter") || GetCliFlag("n") {
-		return
-	}
-	ReadChar()
 }

@@ -1,9 +1,8 @@
-package main
+package cliflags
 
 import (
 	"flag"
 	"fmt"
-	"time"
 )
 
 // Flags
@@ -37,8 +36,3 @@ func GetCliFlag(name string) bool {
 	}
 	return false
 }
-
-// Globals
-var (
-	Delay = 1 * time.Second
-)

@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"log"
+	"mmacli/cliflags"
 	"mmacli/config/attack"
 	"mmacli/config/defense"
 	"mmacli/config/flags"
 	"mmacli/models"
 	"mmacli/myfmt"
+	"mmacli/utils"
 	"time"
 )
 
@@ -15,11 +17,11 @@ var sampleNames = map[int]string{1: "Anderson Silva", 2: "Chael Sonnen"}
 
 func CreateFighter(index int) models.Fighter {
 	name := ""
-	if GetCliFlag("mock") || GetCliFlag("m") {
+	if cliflags.GetCliFlag("mock") || cliflags.GetCliFlag("m") {
 		name = sampleNames[index]
 	} else {
 		fmt.Printf("Type the name of fighter %d: ", index)
-		name = ReadString()
+		name = utils.ReadString()
 	}
 	return models.Fighter{Name: name, Health: MaxHealth}
 }
@@ -27,11 +29,8 @@ func CreateFighter(index int) models.Fighter {
 func SetupPlayers() {
 	fighterOne := CreateFighter(1)
 	fighterTwo := CreateFighter(2)
-
-	WriteString(fmt.Sprintf("\n== %s versus %s ==\n\n", fighterOne.Name, fighterTwo.Name))
-	TimeDelay()
-
 	models.SetPlayers(map[int]*models.Fighter{1: &fighterOne, 2: &fighterTwo})
+	myfmt.PrintDelay("\n== %s versus %s ==\n\n", fighterOne.Name, fighterTwo.Name)
 }
 
 func SetupAttackList() {
@@ -56,9 +55,9 @@ func loadAssets() error {
 }
 
 func SetupGame() error {
-	quickFlag := GetCliFlag("quick") || GetCliFlag("q")
+	quickFlag := cliflags.GetCliFlag("quick") || cliflags.GetCliFlag("q")
 	if quickFlag {
-		Delay = 200 * time.Millisecond
+		SetTimeDelay(200 * time.Millisecond)
 	}
 
 	myfmt.PrintDelay("# Welcome to MMA CLI\n\n")
