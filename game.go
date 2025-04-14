@@ -24,10 +24,12 @@ func RollDice() int {
 }
 
 func AddClockTime() {
-	roll := RollDice()
-	clock -= time.Duration(roll) * time.Second
-	if clock < 0 {
-		clock = 0
+	for range 5 {
+		roll := RollDice()
+		clock -= time.Duration(roll) * time.Second
+		if clock < 0 {
+			clock = 0
+		}
 	}
 }
 
@@ -39,28 +41,32 @@ func GetClockTime() string {
 }
 
 func GameLoop() {
-	var currentPlayerIndex int
-	shouldRunInitiative := true
+	var (
+		currentPlayerIndex  int
+		isDraw              bool
+		shouldRunInitiative = true
+	)
 
 	for CheckGameOver() == false {
 		PrintStatus()
+		AddClockTime()
+
 		if shouldRunInitiative {
-			currentPlayerIndex = PlayersInitiative()
+			currentPlayerIndex, isDraw = PlayersInitiative()
 			PressEnter()
-			PrintStatus()
+			ClearScreen()
+			if isDraw {
+				continue
+			}
 		}
 
 		opponentIndex := Swap[currentPlayerIndex]
 		PlayerAttack(currentPlayerIndex)
-		TimeDelay()
-		PressEnter()
-
-		for range 5 {
-			AddClockTime()
-		}
-
 		currentPlayerIndex = opponentIndex
 		shouldRunInitiative = !shouldRunInitiative
+
+		TimeDelay()
+		PressEnter()
 	}
 
 	fmt.Println("Game over")
