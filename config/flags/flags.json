@@ -1,5 +1,6 @@
 {
   "enableCriticalHit": true,
   "enableCriticalFail": true,
-  "enableTimeDelay": true
+  "enableTimeDelay": true,
+  "enableAnnouncements": false
 }

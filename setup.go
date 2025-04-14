@@ -66,7 +66,8 @@ func SetupGame() error {
 	if err := loadAssets(); err != nil {
 		return err
 	}
-	if !quickFlag {
+	enableAnnouncements := flags.GetById("enableAnnouncements")
+	if !quickFlag && enableAnnouncements {
 		AnouncerPresentation()
 	}
 
